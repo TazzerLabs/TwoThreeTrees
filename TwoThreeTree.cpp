@@ -73,7 +73,7 @@ void TwoThreeTree::buildTree(ifstream & input){
             {
                 //Once word is formatted,call insert with the word, the line of the input
                 //file it came from, the root of our tree, and the distinct word counter
-                insertHelper(tempWord, line, root, distWords);
+                insertHelper(tempWord, line, root, distWords, root);
                 //Increment our total number of words inserted
                 numWords++;
                 //Clear out tempWord so we can use it again
@@ -107,21 +107,22 @@ void TwoThreeTree::buildTree(ifstream & input){
 //the word was found at, node is the node of the tree being
 //examined, and distWord is incremented if a new word is created
 //and used by buildTree
-void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distWord){
+void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distWord, node* parentalUnit)
+{
     if(t == NULL){
-        t = new node(x, "", NULL, NULL, NULL);
+        t = new node(x, "", "", NULL, NULL, NULL, parentalUnit);
         t->Llines.push_back(line);
         distWord++;
     }
     else {
     if (x.compare(t->key) > 0)
-           insertHelper(x, line, t->right, distWord);
+           insertHelper(x, line, t->right, distWord, t);
         //If word is already in tree, then add the line the inserted word
         //came from the the nodes lines vector
     else if (x.compare(t->key) == 0)
         t->lines.push_back(line);
     else
-        insertHelper(x, line, t->left, distWord);
+        insertHelper(x, line, t->left, distWord, t);
         
     }
 }
@@ -129,29 +130,36 @@ void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distW
 //Used by contains() to see if a words is present or not. Will
 //give contains() a pointer to the found node so that contains()
 //can prints the lines the word was found on.
-bool TwoThreeTree::containsHelper(const string & x, node * t, node * &result) const{
+bool TwoThreeTree::containsHelper(const string & x, node * t, node * &result) const
+{
     if (t == NULL)
         return false;
-    if (t->lkey.compare(x) == 0)
+    if (t->isLeaf())
     {
-            result = t;
-            return true;
+        if (t->lkey.compare(x) == 0 || t->rkey.compare(x) == 0)
+        {
+                result = t;
+                return true;
+        }
     }
-    if ( t->rkey.compare(x) == 0)
+    else if (t->isTwoNode())
     {
-    
-        result = t;
-        return true;
-    
+        if (t->lkey.compare(x) < 0)
+            return containsHelper(x, t->left, result);
+        else
+            return containsHelper(x, t->right, result);
     }
-    if (t->lkey.compare(x) < 0) // search left
-        return containsHelper(x, t->left, result);
-    else if (t->rkey.compare("") == 0) // search center
-        return containsHelper(x, t->middle, result);
-    else if (t->rkey.compare(x) < 0) // search center
-        return containsHelper(x, t->middle, result);
-    else // search right
-        return containsHelper(x, t->right, result);
+    else if (t->isThreeNode())
+    {
+        
+        if (t->lkey.compare(x) < 0)
+            return containsHelper(x, t->left, result);
+        else if (t->rkey.compare(x) > 0)
+            return containsHelper(x, t->right, result);
+        else // t->lkey < x < t->rkey
+            return containsHelper(x, t->middle, result);
+        
+    }
 
 }
 
@@ -200,17 +208,24 @@ void TwoThreeTree::printTreeHelper(node *t, ostream & out) const
         {
         
             printTreeHelper(t->left, out);
+            
             out << setw(30) << std::left;
             out << t->lkey << " " << t->lines[0];
             for (int i = 1; i < t->lines.size(); i++)
                 out << ", " << t->lines[i];
             out << endl;
+            
             printTreeHelper(t->middle, out);
-            out << setw(30) << std::left;
-            out << t->rkey << " " << t->lines[0];
-            for (int i = 1; i < t->lines.size(); i++)
-                out << ", " << t->lines[i];
-            out << endl;
+            
+            if (t->rkey.length() != 0)
+            {
+                out << setw(30) << std::left;
+                out << t->rkey << " " << t->lines[0];
+                for (int i = 1; i < t->lines.size(); i++)
+                    out << ", " << t->lines[i];
+                out << endl;
+            }
+            
             printTreeHelper(t->right, out);
         
         }
@@ -218,15 +233,18 @@ void TwoThreeTree::printTreeHelper(node *t, ostream & out) const
 }
 
 //Returns height of tree. If tree has only one node, height is 1
-int TwoThreeTree::findHeight(node *t){
+int TwoThreeTree::findHeight(node *t)
+{
     if(t == NULL)
-    return 0;
-    else{
-    int leftHeight = findHeight(t->left), rightHeight = findHeight(t->right);
-    if(leftHeight > rightHeight)
-        return(leftHeight+1);
+        return 0;
     else
-        return(rightHeight+1);
+    {
+        int leftHeight = findHeight(t->left), rightHeight = findHeight(t->right);
+        
+        if(leftHeight > rightHeight)
+            return(leftHeight+1);
+        else
+            return(rightHeight+1);
     }
 }
 

@@ -26,16 +26,18 @@ class TwoThreeTree
     private:
     struct node{
         node() { left = middle = right = nullptr;}
-        node(const string &lx, const string &rx, node *l, node *m, node *r, )
-        :lkey(lx), rkey(rx), left(l), middle(m), right(r){
+        node(const string &lx, const &mx, const string &rx, node *l, node *m, node *r, node *p)
+        : lkey(lx), mkey(mx), rkey(rx), left(l), middle(m), right(r), parent(p) {
                 Llines.resize(0);
                 Rlines.resize(0);
         }
         string lkey;
+        string mkey;
         string rkey;
         node * left;
         node * middle;
         node * right;
+        node * parent;
         vector<int> Llines;
         vector<int> Rlines;
     };
@@ -46,12 +48,13 @@ class TwoThreeTree
     bool containsHelper(const string & x, node * t, node* &result) const;
     void printTreeHelper(node *t, ostream & out) const;
     int findHeight(node *t);
-    bool isLeaf() { return left == nullptr; }
+    bool isLeaf() { return (left == nullptr && middle == nullptr && right == nullptr); }
     bool isTwoNode();
     bool isThreeNode();
     node* lchild() { return left; }
     node* rchild() { return right; }
     node* mchild() { return middle; }
+    node* parent() { return parent;}
     string rkey() { return rkey; }
     string lkey() { return lkey; }
     void setLeft(const string X) { lkey = X;}
