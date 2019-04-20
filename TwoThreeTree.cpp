@@ -109,22 +109,66 @@ void TwoThreeTree::buildTree(ifstream & input){
 //and used by buildTree
 void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distWord, node* parentalUnit)
 {
-    if(t == NULL){
+    if(!t)
+    {
         t = new node(x, "", "", NULL, NULL, NULL, parentalUnit);
         t->Llines.push_back(line);
         distWord++;
     }
-    else {
-    if (x.compare(t->key) > 0)
-           insertHelper(x, line, t->right, distWord, t);
-        //If word is already in tree, then add the line the inserted word
-        //came from the the nodes lines vector
-    else if (x.compare(t->key) == 0)
-        t->lines.push_back(line);
-    else
-        insertHelper(x, line, t->left, distWord, t);
+    if (t->isOneKey()) // we have 1 key inside our node
+    {
+    
+        if (x.compare(t->lkey) == 0)
+            t->Llines.push_back(line);
+        else if (x.compare(t->lkey) < 0 )
+        {
+            t->setRightKey(t->lkey);
+            t->Rlines = t->Llines;
+            t->setLeftKey(x);
+            t->Llines.resize(0);
+            t->Llines.push_back(line);
+        }
+        else
+        {
+            t->setRightKey(x);
+            t->Rlines.push_back(line);
+        }
+    
+    }
+    else // We have two keys inside our node
+    {
+        if (x.compare(t->lkey) == 0)
+            t->Llines.push_back(line);
+        else if (x.compare(t->rkey) == 0 )
+            t->Rlines.push_back(line);
+        else if (x.compare(t->lkey) > 0 && x.compare(t->rkey) > 0)
+        {
+            t->setMiddleKey(t->rkey);
+            t->setRightKey(x);
+            t->Mlines = t->Rlines;
+            t->Rlines.resize(0);
+            t->Rlines.push_back(line);
+            // Call split
+        }
+        else if (x.compare(t->lkey) > 0 && x.compare(t->rkey) < 0)
+        {
+            t->setMiddleKey(x);
+            t->Mlines.push_back(line);
+            // Call split
+        }
+        else if (x.compare(t->lkey) < 0 && x.compare(t->rkey) < 0)
+        {
+            t->setMiddleKey(t->lkey);
+            t->Mlines = t->Llines;
+            t->Llines.resize(0);
+            t->setLeftKey(x);
+            t->Llines.push_back(line);
+            // Call Split
+        }
+
         
     }
+
 }
 
 //Used by contains() to see if a words is present or not. Will
@@ -134,13 +178,10 @@ bool TwoThreeTree::containsHelper(const string & x, node * t, node * &result) co
 {
     if (t == NULL)
         return false;
-    if (t->isLeaf())
+    if (t->lkey.compare(x) == 0 || t->rkey.compare(x) == 0)
     {
-        if (t->lkey.compare(x) == 0 || t->rkey.compare(x) == 0)
-        {
                 result = t;
                 return true;
-        }
     }
     else if (t->isTwoNode())
     {
@@ -151,14 +192,14 @@ bool TwoThreeTree::containsHelper(const string & x, node * t, node * &result) co
     }
     else if (t->isThreeNode())
     {
-        
+
         if (t->lkey.compare(x) < 0)
             return containsHelper(x, t->left, result);
         else if (t->rkey.compare(x) > 0)
             return containsHelper(x, t->right, result);
         else // t->lkey < x < t->rkey
             return containsHelper(x, t->middle, result);
-        
+
     }
 
 }
@@ -248,10 +289,31 @@ int TwoThreeTree::findHeight(node *t)
     }
 }
 
+bool TwoThreeTree::isOneKey()
+{
+
+    return (lkey.compare("") != 0)
+
+}
+
+bool TwoThreeTree::isTwoKey()
+{
+
+    return ((lkey.compare("") != 0 && rkey.compare("") != 0 && mkey.compare("") == 0) || (lkey.compare("") != 0 && rkey.compare("") == 0 && mkey.compare("") != 0) || (lkey.compare("") == 0 && rkey.compare("") != 0 && mkey.compare("") != 0));
+
+}
+
+bool TwoThreeTree::isThreeKey()
+{
+
+    return (lkey.compare("") != 0 && rkey.compare("") != 0 && mkey.compare("") != 0);
+
+}
+
 bool TwoThreeTree::isTwoNode()
 {
 
-    return ((left != nullptr && right != nullptr && middle == nullptr) || (left != nullptr && right == nullptr && middle != nullptr) || (left == nullptr && right != nullptr && middle != nullptr));
+    return ((lkey != nullptr && right != nullptr && middle == nullptr) || (left != nullptr && right == nullptr && middle != nullptr) || (left == nullptr && right != nullptr && middle != nullptr));
 
 }
 
