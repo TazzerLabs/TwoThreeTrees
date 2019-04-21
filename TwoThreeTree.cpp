@@ -171,6 +171,90 @@ void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distW
 
 }
 
+void TwoThreeTree::split(node* t)
+{
+
+    if (!t)
+        return;
+    
+    node* j = new node(t->rkey, "", "", NULL, NULL, NULL, NULL);
+    j->Llines = t->Rlines;
+    t->Rlines.resize(0);
+    t->rkey = "";
+    
+    if (!t->parent)
+    {
+        
+        node* k = new node(t->mkey, "", "", t, NULL, j, NULL);
+        j->setParent(k);
+        k->Llines = t->Mlines;
+        t->Mlines.resize(0);
+        t->mkey = "";
+        t->setParent(k);
+    
+    }
+    else // else they have a parent
+    {
+    
+        j->setParent(t->parent);
+    
+        if (t->parent->isOneKey())
+        {
+    
+            if (t->parent->lkey.compare(t->mkey) < 0 )
+            {
+                t->parent->setRightKey(t->parent->lkey);
+                t->parent->Rlines = t->parent->Llines;
+                t->parent->setLeftKey(t->mkey);
+                t->parent->Llines = t->Mlines;
+                t->mkey = "";
+                t->Mlines.resize(0);
+                
+            }
+            else
+            {
+                t->parent->setRightKey(t->mkey);
+                t->Rlines = t->Mlines;
+                
+            }
+        }
+        else // They have two keys
+        {
+        
+            if (t->mkey.compare(t->parent->lkey) > 0 && t->mkey.compare(t->parent->rkey) > 0)
+            {
+                t->parent->setMiddleKey(t->parent->rkey);
+                t->parent->setRightKey(t->mkey);
+                t->parent->Mlines = t->parent->Rlines;
+                t->parent->Rlines = t->Mlines;
+                
+            }
+            else if (t->mkey.compare(t->parent->lkey) > 0 && t->mkey.compare(t->parent->rkey) < 0)
+            {
+                t->parent->setMiddleKey(t->mkey);
+                t->parent->Mlines = t->Mlines;
+                
+            }
+            else if (t->mkey.compare(t->parent->lkey) < 0 && t->mkey.compare(t->parent->rkey) < 0)
+            {
+                t->parent->setMiddleKey(t->parent->lkey);
+                t->parent->Mlines = t->parent->Llines;
+                t->parent->setLeftKey(t->mkey);
+                t->parent->Llines = t->Mlines;
+                
+            }
+            
+            t->Mlines.resize(0);
+            t->mkey = "";
+            
+            split(t->parent);
+        
+        } // end of else parent has 2 keys
+            
+    } // end of else they have a parent
+
+}
+
 //Used by contains() to see if a words is present or not. Will
 //give contains() a pointer to the found node so that contains()
 //can prints the lines the word was found on.
@@ -280,12 +364,22 @@ int TwoThreeTree::findHeight(node *t)
         return 0;
     else
     {
-        int leftHeight = findHeight(t->left), rightHeight = findHeight(t->right);
+        int leftHeight = findHeight(t->left), rightHeight = findHeight(t->right), middleHeight = findHeight(t->middle);
         
         if(leftHeight > rightHeight)
-            return(leftHeight+1);
+        {
+            if (middleHeight > leftHeight)
+                return(middleHeight+1);
+            else
+                return(leftHeight+1);
+        }
         else
-            return(rightHeight+1);
+        {
+            if (middleHeight > rightHeight)
+                return(middleHeight+1);
+            else
+                return(rightHeight+1);
+        }
     }
 }
 
