@@ -148,13 +148,13 @@ void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distW
             t->Mlines = t->Rlines;
             t->Rlines.resize(0);
             t->Rlines.push_back(line);
-            // Call split
+            split(t);
         }
         else if (x.compare(t->lkey) > 0 && x.compare(t->rkey) < 0)
         {
             t->setMiddleKey(x);
             t->Mlines.push_back(line);
-            // Call split
+            split(t);
         }
         else if (x.compare(t->lkey) < 0 && x.compare(t->rkey) < 0)
         {
@@ -163,7 +163,7 @@ void TwoThreeTree::insertHelper(const string &x, int line, node *& t, int &distW
             t->Llines.resize(0);
             t->setLeftKey(x);
             t->Llines.push_back(line);
-            // Call Split
+            split(t);
         }
 
         
@@ -201,7 +201,7 @@ void TwoThreeTree::split(node* t)
         if (t->parent->isOneKey())
         {
     
-            if (t->parent->lkey.compare(t->mkey) < 0 )
+            if (t->parent->lkey.compare(t->mkey) < 0 ) // got this from the left child
             {
                 t->parent->setRightKey(t->parent->lkey);
                 t->parent->Rlines = t->parent->Llines;
@@ -210,37 +210,52 @@ void TwoThreeTree::split(node* t)
                 t->mkey = "";
                 t->Mlines.resize(0);
                 
+                t->parent->setMChild(j);
+                
             }
-            else
+            else // got this from the right child
             {
                 t->parent->setRightKey(t->mkey);
                 t->Rlines = t->Mlines;
                 
+                t->parent->setMChild(t);
+                t->parent->setRightChild(j);
+                
             }
+    
+            
         }
         else // They have two keys
         {
         
-            if (t->mkey.compare(t->parent->lkey) > 0 && t->mkey.compare(t->parent->rkey) > 0)
+            if (t->mkey.compare(t->parent->lkey) > 0 && t->mkey.compare(t->parent->rkey) > 0) // if mkey > parent rkey > parent lkey came from right child
             {
                 t->parent->setMiddleKey(t->parent->rkey);
                 t->parent->setRightKey(t->mkey);
                 t->parent->Mlines = t->parent->Rlines;
                 t->parent->Rlines = t->Mlines;
                 
+                t->parent->setMChild(t);
+                t->parent->setRightChild(j);
+                
             }
-            else if (t->mkey.compare(t->parent->lkey) > 0 && t->mkey.compare(t->parent->rkey) < 0)
+            else if (t->mkey.compare(t->parent->lkey) > 0 && t->mkey.compare(t->parent->rkey) < 0) // parent rkey > mkey > parent lkey still right child
             {
                 t->parent->setMiddleKey(t->mkey);
                 t->parent->Mlines = t->Mlines;
                 
+                t->parent->setMChild(t);
+                t->parent->setRightChild(j);
+                
             }
-            else if (t->mkey.compare(t->parent->lkey) < 0 && t->mkey.compare(t->parent->rkey) < 0)
+            else if (t->mkey.compare(t->parent->lkey) < 0 && t->mkey.compare(t->parent->rkey) < 0) // parent rkey > parent lkey > mkey came from left child
             {
                 t->parent->setMiddleKey(t->parent->lkey);
                 t->parent->Mlines = t->parent->Llines;
                 t->parent->setLeftKey(t->mkey);
                 t->parent->Llines = t->Mlines;
+                
+                t->parent->setMChild(j);
                 
             }
             
