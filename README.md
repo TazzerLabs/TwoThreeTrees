@@ -5,6 +5,7 @@ Programmers:
   Adam Miller
 
 to compile program:
+
   make twoThreeTree
   
 to run program:
