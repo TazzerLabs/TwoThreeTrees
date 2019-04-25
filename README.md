@@ -1,7 +1,7 @@
 # TwoThreeTrees
 
 Programmers: 
-  Johnathan Soto
+  Johnathan Soto &
   Adam Miller
 
 to compile program:
